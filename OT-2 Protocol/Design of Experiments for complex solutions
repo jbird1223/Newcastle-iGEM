@@ -11,10 +11,10 @@ from opentrons import labware, instruments, robot      										# Import Opentr
 from sqlite3 import IntegrityError															          # Import sqlite IntegrityError for any custom containers 			
 		
 tiprack_200 = labware.load("opentrons-tiprack-300ul", slot='1')
-tiprack_10 = labware.load("tiprack-10ul", slot='3')											  # Universals_Cold_Box = custom container for 30 mL universal tubes
-Stock1 = labware.load("Universals_Cold_Box", slot='10')										
+tiprack_10 = labware.load("tiprack-10ul", slot='2')											  # Universals_Cold_Box = custom container for 30 mL universal tubes
+Stock1 = labware.load("Universals_Cold_Box", slot='4')										
 Stock2 = labware.load("Universals_Cold_Box", slot='5')           					# Import all labware and trash 
-well_buffers96 = labware.load("96-flat", slot ='2')
+well_buffers96 = labware.load("96-flat", slot ='3')
 trash = robot.fixed_trash
 
 P300 = instruments.P300_Single(															            	# Import pipette types 
