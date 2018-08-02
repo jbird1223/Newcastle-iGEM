@@ -7,21 +7,21 @@
 #The input from the code must be in list within a list, the sublist must contain the appropriate float type value and no whitespaces
 
 
-from opentrons import labware, instruments, robot      										# Import Opentrons Api 
-from sqlite3 import IntegrityError															# Import sqlite IntegrityError for any custom containers 			
+from opentrons import labware, instruments, robot      						# Import Opentrons Api 
+from sqlite3 import IntegrityError								# Import sqlite IntegrityError for any custom containers 			
 		
 tiprack_200 = labware.load("opentrons-tiprack-300ul", slot='1')
-tiprack_10 = labware.load("tiprack-10ul", slot='3')											# Universals_Cold_Box = custom container for 30 mL universal tubes
+tiprack_10 = labware.load("tiprack-10ul", slot='3')						# Universals_Cold_Box = custom container for 30 mL universal tubes
 Stock1 = labware.load("Universals_Cold_Box", slot='10')										
-Stock2 = labware.load("Universals_Cold_Box", slot='5')           							# Import all labware and trash 
+Stock2 = labware.load("Universals_Cold_Box", slot='5')           				# Import all labware and trash 
 well_buffers96 = labware.load("96-flat", slot ='2')
 trash = robot.fixed_trash
 
-P300 = instruments.P300_Single(																# Import pipette types 
-	mount='right',																			# If using different pipette tips, modify float 
-	aspirate_flow_rate=300,																	# and pipette commands in command block (see below)
-	dispense_flow_rate=300,																	# Assign tiprack and trash, make sure aspirate/dispense speeds
-	tip_racks=[tiprack_200],																# are suitable for reagent viscosity (can be further altered below)
+P300 = instruments.P300_Single(									# Import pipette types 
+	mount='right',										# If using different pipette tips, modify float 
+	aspirate_flow_rate=300,									# and pipette commands in command block (see below)
+	dispense_flow_rate=300,									# Assign tiprack and trash, make sure aspirate/dispense speeds
+	tip_racks=[tiprack_200],								# are suitable for reagent viscosity (can be further altered below)
 	trash_container=trash 
 )
 
@@ -39,22 +39,22 @@ P10 = instruments.P10_Single(
 # ALTER VALUES AND POSITIONS BELOW
 #########################################################################################
 #########################################################################################
-reagents1 = [																				# Input volumes in list within a list, must have no whitespaces
+reagents1 = [											# Input volumes in list within a list, must have no whitespaces
 #eg	[40,7.5,40,40,7.5,40,7.5,40,7.5,40,7.5,40,0,40,0,40,20,40,40,0,20,40,0,20,0],
 #	[40,7.5,7.5,40,7.5,7.5,7.5,7.5,40,40,23.75,7.5,7.5,7.5,40,40,23.75,40,23.75,7.5,7.5,40,40,40,40]
 ]
 
 reagent_pos1 = [
 #eg	'A1','A3'
-]																							# Specify reagent positions, 1st list within list equates to 
-# list sequence A1 = MgCl2 stock, A3 = CaCL2 stock											# first position in reagent_pos list
+]												# Specify reagent positions, 1st list within list equates to 
+# list sequence A1 = MgCl2 stock, A3 = CaCL2 stock						# first position in reagent_pos list
 																							
-reagents2 = [																				# Input volumes in list within a list must have no whitespaces
+reagents2 = [											# Input volumes in list within a list must have no whitespaces
 	[]
 ]
 
-reagent_pos2 = []																			# Specify reagent positions, 1st list within list equates to 
-																							# first position in reagent_pos list
+reagent_pos2 = []										# Specify reagent positions, 1st list within list equates to 
+												# first position in reagent_pos list
 																							
 #########################################################################################
 #########################################################################################   
@@ -67,17 +67,17 @@ reagent_pos2 = []																			# Specify reagent positions, 1st list within
 
 #No.1
 for counter, reagent in enumerate(reagents1,0):												
-																							# These objects are temporary and will only exist within this loop
-	source		= reagent_pos1[counter]														# Counter is use to index an independent list (e.g. reagent_pos)
-	P10list 	= [source]																	# This is then added to both list				
+												# These objects are temporary and will only exist within this loop
+	source		= reagent_pos1[counter]							# Counter is use to index an independent list (e.g. reagent_pos)
+	P10list 	= [source]								# This is then added to both list				
 	P300list	= [source]
 
 
-	P300.pick_up_tip()																		# Picks up pipette tip for both P10 and P300 to allow to alternate
+	P300.pick_up_tip()									# Picks up pipette tip for both P10 and P300 to allow to alternate
 	P10.pick_up_tip()														
-	for well_counter, values in enumerate(reagent):											# Specifies the well position and the volume of reagent being 
-		if values < float(30):																# transfered in
-			P10.distribute(																	# If volume below 30, P10 used not p300, if over P300 used
+	for well_counter, values in enumerate(reagent):						# Specifies the well position and the volume of reagent being 
+		if values < float(30):								# transfered in
+			P10.distribute(								# If volume below 30, P10 used not p300, if over P300 used
 				values, 
 				Stock1(source), 
 				well_buffers96(well_counter).top(0.5),
@@ -92,22 +92,22 @@ for counter, reagent in enumerate(reagents1,0):
 				blow_out=True,
 				rate=1,
 				new_tip='never')
-	P300.drop_tip()																			# Drops tips at end of single reagent run to prevent contamination 
+	P300.drop_tip()										# Drops tips at end of single reagent run to prevent contamination 
 	P10.drop_tip()
 
 #No.2
 for counter, reagent in enumerate(reagents2,0):												
-																							# These objects are temporary and will only exist within this loop
-	source		= reagent_pos2[counter]														# Counter is use to index an independent list (e.g. reagent_pos)
-	P10list 	= [source]																	# This is then added to both list				
+												# These objects are temporary and will only exist within this loop
+	source		= reagent_pos2[counter]							# Counter is use to index an independent list (e.g. reagent_pos)
+	P10list 	= [source]								# This is then added to both list				
 	P300list	= [source]
 
 
-	P300.pick_up_tip()																		# Picks up pipette tip for both P10 and P300 to allow to alternate
+	P300.pick_up_tip()									# Picks up pipette tip for both P10 and P300 to allow to alternate
 	P10.pick_up_tip()														
-	for well_counter, values in enumerate(reagent):											# Specifies the well position and the volume of reagent being 
-		if values < float(30):																# transfered in
-			P10.distribute(																	# If volume below 30, P10 used not p300, if over P300 used
+	for well_counter, values in enumerate(reagent):						# Specifies the well position and the volume of reagent being 
+		if values < float(30):								# transfered in
+			P10.distribute(								# If volume below 30, P10 used not p300, if over P300 used
 				values, 
 				Stock2(source), 
 				well_buffers96(well_counter).top(0.5),
@@ -122,5 +122,5 @@ for counter, reagent in enumerate(reagents2,0):
 				blow_out=True,
 				rate=1,
 				new_tip='never')
-	P300.drop_tip()																			# Drops tips at end of single reagent run to prevent contamination 
+	P300.drop_tip()										# Drops tips at end of single reagent run to prevent contamination 
 	P10.drop_tip()
