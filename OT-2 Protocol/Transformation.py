@@ -109,7 +109,6 @@ robot.pause()  																 # Change to P10.delay(minutes=5) if delay bug is
 # Transfers 150 SOB into transformed aliquots and heats tempdeck to 37 to incubate indefinitely
 # Can add a mix step for piece of mind, however successful transformation is seen without and it saves time/tips
 
-P300.pick_up_tip()
 P300.transfer(																
 	150,
 	SOB('A1'),
