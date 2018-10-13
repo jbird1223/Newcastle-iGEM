@@ -6,14 +6,14 @@
 ####################################################################################################################################################
 ######################################################################################################################################################
 
-from opentrons import labware, instruments, robot      										                  # Import Opentrons Api 
-from sqlite3 import IntegrityError															                            # Import error for any new containers 
+from opentrons import labware, instruments, robot      					# Import Opentrons Api 
+from sqlite3 import IntegrityError							# Import error for any new containers 
 
 #####################################################################################################################################################
 #####################################################################################################################################################
 
-tiprack_300 = labware.load("opentrons-tiprack-300ul", '11')									                # Can change positions
-tiprack_300_2 = labware.load("opentrons-tiprack-300ul", '10')								                # This is 96 well not 24 falcon just for example
+tiprack_300 = labware.load("opentrons-tiprack-300ul", '11')				# Can change positions
+tiprack_300_2 = labware.load("opentrons-tiprack-300ul", '10')				# This is 96 well not 24 falcon just for example
 Test_Devices = labware.load("96-PCR-flat", '2')										
 Test_Device_Plate = labware.load("96-PCR-flat", '3')              								 
 trash = robot.fixed_trash
@@ -21,11 +21,11 @@ trash = robot.fixed_trash
 #####################################################################################################################################################
 #####################################################################################################################################################
 
-P300 = instruments.P300_Single(																                              # Import pipette types, P300 or P10 
-	mount='right',																			                                      # If using different pipette tips, modify float 
-	aspirate_flow_rate=200,																	                                  # and pipette commands in command block 
-	dispense_flow_rate=200,																	                                  # Assign tiprack and trash, make sure aspirate/dispense speeds
-	tip_racks=[tiprack_300],																                                  # are suitable for reagent viscosity
+P300 = instruments.P300_Single(								# Import pipette types, P300 or P10 
+	mount='right',									# If using different pipette tips, modify float 
+	aspirate_flow_rate=200,								# and pipette commands in command block 
+	dispense_flow_rate=200,								# Assign tiprack and trash, make sure aspirate/dispense speeds
+	tip_racks=[tiprack_300],							# are suitable for reagent viscosity
 	trash_container=trash 
 )
 
@@ -33,18 +33,18 @@ P300 = instruments.P300_Single(																                              # I
 #####################################################################################################################################################
 # Preamble 
 
-Volume = 100																				                                        # Volume of device to be transfered to plate
+Volume = 100										# Volume of device to be transfered to plate
 
 # Positions
 
-LB_CAM = Test_Devices('H1')																	                                # Location of LB_CAM stock
+LB_CAM = Test_Devices('H1')								# Location of LB_CAM stock
 
 Cultures_Co1 = [
-	'A1', 'A2', 'A3', 'B1', 'B2', 'B3', 'C1', 'C2']											                      # Location of colony 1 test device cultures as follows
-																							                                              # neg/pos/1/2/3/4/5/6
+	'A1', 'A2', 'A3', 'B1', 'B2', 'B3', 'C1', 'C2']					# Location of colony 1 test device cultures as follows
+											# neg/pos/1/2/3/4/5/6
 Cultures_Co2 = [
-	'D1', 'D2', 'D3', 'E1', 'E2', 'E3', 'F1', 'F2']											                      # Location of colony 2 test device cultures as follows
-																							                                              # neg/pos/1/2/3/4/5/6											
+	'D1', 'D2', 'D3', 'E1', 'E2', 'E3', 'F1', 'F2']					# Location of colony 2 test device cultures as follows
+											# neg/pos/1/2/3/4/5/6											
 
 # Destinations in 96 well plate of colony 1 devices
 Neg_Co1 = Test_Device_Plate.wells('A1', to='D1')
@@ -95,9 +95,9 @@ Co2_Destinations = [Neg_Co2, Pos_Co2, TD1_Co2,
 #####################################################################################################################################################
 #####################################################################################################################################################
 # Step 3, take 100 mL of diluted culture and pipette into plate 
-																							                                        # zip allows for lists to be iterated together
-for TD1, CTD1 in zip(Cultures_Co1,Co1_Destinations):										              # TD1 = Test Device cultures 1											
-    P300.distribute(																		                              # CTD1 = Test Devices 100 mL aliquot destination for culture 1
+												# zip allows for lists to be iterated together
+for TD1, CTD1 in zip(Cultures_Co1,Co1_Destinations):						# TD1 = Test Device cultures 1											
+    P300.distribute(										# CTD1 = Test Devices 100 mL aliquot destination for culture 1
         Volume,
         Test_Devices(TD1),
         CTD1,
@@ -105,8 +105,8 @@ for TD1, CTD1 in zip(Cultures_Co1,Co1_Destinations):										              # TD
         
 robot.comment("Finished Colony 1")
 
-for TD2, CTD2 in zip(Cultures_Co2, Co2_Destinations):										              # TD2 = Test Device colony 2 
-    P300.distribute(																		                              # CTD2 = Test Devices 100 mL aliquot destination for culture 2
+for TD2, CTD2 in zip(Cultures_Co2, Co2_Destinations):						# TD2 = Test Device colony 2 
+    P300.distribute(										# CTD2 = Test Devices 100 mL aliquot destination for culture 2
         Volume,
         Test_Devices(TD2),
         CTD2,
@@ -114,7 +114,7 @@ for TD2, CTD2 in zip(Cultures_Co2, Co2_Destinations):										              # T
     
 robot.comment("Finished Colony 2")
 
-P300.transfer(																				                                # Transfering the LB+CAM control 
+P300.transfer(											# Transfering the LB+CAM control 
     Volume,
     LB_CAM,
     Test_Device_Plate.cols(9))
