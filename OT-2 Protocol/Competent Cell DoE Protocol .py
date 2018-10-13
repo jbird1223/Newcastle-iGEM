@@ -1,22 +1,30 @@
 #Author(s): Matt Burridge
-#Last modified: 11:37, 06/08/18
+#Last modified: 02:14, 13/10/18
 #Python 3.6.4
 #Please keep the author(s) attached to the code segment for traceability, if changes are made please append the authour list and modify the timestamp #
 
 #####################################################################################################################################
 #The input from the code must be in list within a list, the sublist must contain the appropriate float type value and no whitespaces
+#####################################################################################################################################
 
-
-from opentrons import labware, instruments, robot											# Import all opentrons API 
+from opentrons import labware, instruments, robot, modules									# Import all opentrons API 
 from sqlite3 import IntegrityError															# Import sqlite3 for custom container support 
-from opentrons.drivers.temp_deck import TempDeck											# Import TempDeck driver for usable temp deck 
 
-tiprack200_1 = labware.load('tiprack-200ul', slot='9')										# Import labware
-Compcells1 = labware.load('96-flat', slot='6')
+#####################################################################################################################################
+#####################################################################################################################################
+# LOADED LABWARE
+
+TempDeck = modules.load('tempdeck', '6')													# Loads TempDeck
+tiprack200_1 = labware.load('opentrons-tiprack-300ul', '9')									
+Compcells1 = labware.load('96-flat', '6', "compcells1", share=True)
 trash = robot.fixed_trash																	# Specify trash 
-Culture = labware.load('duran_100', slot='4')												# Chilledflask_100 and duran_250 are custom containers 
-Buffers = labware.load('96-deep-well', slot ='3')  
+Culture = labware.load('duran_100', '4')													# Chilledflask_100 and duran_250 are custom containers 
+Buffers = labware.load('96-deep-well', '3')  
 
+#####################################################################################################################################
+#####################################################################################################################################
+# LOADED PIPETTES 
+# CAN CHANGE IF NEEDED
 
 P300 = instruments.P300_Single(																# Import Pipette, set aspiration/dispense rates and equip with rack 
     mount='right',
@@ -27,9 +35,9 @@ P300 = instruments.P300_Single(																# Import Pipette, set aspiration/
 )
 
 
+#####################################################################################################################################
+#####################################################################################################################################
 # BELOW ARE VALUES THAT CAN BE CHANGED 
-#########################################################################################
-#########################################################################################
 
 target_temperature = 4																		# Specifies TempDeck temperature, 4 degrees is best for this protocol 
 
@@ -43,65 +51,65 @@ Even_wells= [
 
 Buffers_positions = Buffers.wells('A1', length=25)											# Specify the buffer positions, change length=25 to whatever the number
 																							# of buffers you have, eg if 15 buffers length=15
-#########################################################################################	
-#########################################################################################
-# BELOW IS CODE FOR THE PROTOCOL 
+#####################################################################################################################################
+#####################################################################################################################################
+# PREAMBLE
 # IF WORKING WITH E. COLI, BELOW IS A OPTIMAL PROTOCOL THAT ONLY REQUIRES 1 WASH STEP 
 # IF INVESTINGATING DIFFERENT INCUBATION TIMES, ALTER P300 DELAYS 
-# IF WANTING TO CHANGE TEMPDECK ON CONSTANTLY, REMOVE ALL tempdeck.disengage() AND PLACE BEFORE
+# IF WANTING TO TURN TEMPDECK ON CONSTANTLY, REMOVE ALL tempdeck.disengage() AND PLACE BEFORE
 # FINAL ROBOT COMMENT
+# TURBLENT AIRFLOW WITHIN THE OT-2, TRY TO MINIMISE WITH FAN SHIELD
 
+target_temperature1 = 4																		# Cold Incubation 
 
-
-
-tempdeck = TempDeck()																		# Connects the Tempdeck module to OT-2 
-
-if not robot.is_simulating():																# Cannot use while simulating,
-	tempdeck.connect('/dev/ttyACM0')
-	tempdeck.set_temperature(target_temperature)											# Sets the temperature to whats specified above
+TempDeck.set_temperature(target_temperature1)												# Sets temperature to 4
+TempDeck.wait_for_temp()
 
 
 
 target1 = Compcells1(Even_wells)															# Where your cells are going 
 
-robot.home()																				# turbulent airflow within the OT-2
-robot.pause()
+robot.home()																				
 robot.comment("Make sure that centrifuge has been chilled down to 4*C and all buffers are on ice.")
 robot.comment("All plates should be chilled at the beginning and culture should be incubated on ice for 15 minutes before start.")
-robot.comment("Once at set temperature, insert culture into slot 6 and plate onto TempDeck, then resume!")
+robot.comment("If all prepared, press resume")
+robot.pause()
  
+#####################################################################################################################################
+#####################################################################################################################################
 #bacterial culture																			# This is the first step of protocol, 200 uL bacterial culture at OD 0.4-0.6 
-for i in range(1):																			# added to 96 well plate in specified wells 
-	P300.pick_up_tip()
-	P300.transfer(
-		200,
-		Culture('A1'),
-		target1(),
-		blow_out=True)	
-	robot.comment("Time to centrifuge your cultures")										# Pause to allow time for bacteria to be pelleted via centrifuge
-	robot.pause()
-	
+
+P300.transfer(
+	200,
+	Culture('A1'),
+	target1(),																				# Specified in preamble, where the aliquots go
+	new_tip='once',
+	blow_out=True)	
+robot.comment("Time to centrifuge your cultures")											# Pause to allow time for bacteria to be pelleted via centrifuge
+robot.pause()
+robot.comment("Resume when cultures have been centrifuged")
+
+#####################################################################################################################################
+#####################################################################################################################################
 # Wash Aliquot
-for i in range(1):																			# Wash step
-	P300.pick_up_tip()																		# Supernatant is removed from each well to leave the pellet
-	P300.transfer(
-		200,
-		target1(),
-		Culture('A1').top(-27),
-		blow_out=True)
-	P300.drop_tip()
 
-	P300.pick_up_tip()																		# Wash buffer is added to each individual well and mixing occurs
-	P300.transfer(																			# to resuspend the pellet
-		100,
-		Buffers_positions,
-		target1(),
-		mix_after=(5, 100),
-		new_tip='always')
-	robot.comment("Time to incubate your cultures")											# Tempdeck recools and switches off while allowing time for centrifugation
-	robot.comment("Time to centrifuge your cultures")										# of cultures 
-	robot.pause()
-														# Can be frozen or used immediately depending on your wash buffer 
+P300.transfer(
+	200,
+	target1(),
+	Culture('A1').top(-27),																	# Culture is now used as microbial waste to reduce space
+	new_tip='once',																			# Dispenses -27 mm below top to prevent contamination via
+	blow_out=True)																			# tip touching culture
 
-tempdeck.disengage()
+P300.transfer(																			
+	100,
+	Buffers_positions,																		# Follows the positions as specified in preamble, goes through columns
+	target1(),																				# Can change buffer_positions to any position if only using 1 buffer
+	mix_after=(5, 100),
+	new_tip='always')
+
+robot.comment("!!!REMOVE CELLS FROM TEMPDECK, TEMPDECK WILL DISENGAGE WHEN RESUMED AND HEAT!!!")
+robot.pause()
+robot.comment("!!!REMOVE CELLS FROM TEMPDECK, TEMPDECK WILL DISENGAGE WHEN RESUMED AND HEAT!!!")
+
+TempDeck.deactivate()																							
 robot.comment("Protocol Finished")
