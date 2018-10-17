@@ -1,4 +1,4 @@
-#Author(s): 2018 Newcastel iGEM 
+#Author(s): 2018 Newcastle iGEM 
 #Last modified: 19:18, 17/10/18
 #Python 3.6.4
 #Please keep the author(s) attached to the code segment for traceability, if changes are made please append the authour list and modify the timestamp
