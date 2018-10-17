@@ -65,6 +65,7 @@ target_temperature1 = 4															# Cold Incubation
 target_temperature2 = 42														# Heat Shock
 target_temperature3 = 37 														# Recovery incubation
 
+DNA_Vol = 3																# Set how much DNA you want to use for transformation
 
 TempDeck.set_temperature(target_temperature1)												# Sets temperature to 4
 TempDeck.wait_for_temp()
@@ -78,7 +79,7 @@ SOB_wells = [well.top(1) for well in target()]												# Positional argument 
 # DNA TRANSFER STEP
 
 P10.distribute(																# Presumes same plasmid for all cells 
-	3, 
+	DNA_Vol, 
 	DNA('A1'), 
 	Compcells(Even_wells),
 	blow_out=True,
